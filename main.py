@@ -1,10 +1,9 @@
 import io
 import sys
 from random import randint
-from PyQt5 import uic  # Импортируем uic
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
-from PyQt5.QtGui import QPainter, QPixmap, QPen, QColor
-from PyQt5.QtCore import Qt
+from PyQt5 import uic
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtGui import QPainter, QColor
 
 template = """<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
@@ -53,30 +52,34 @@ template = """<?xml version="1.0" encoding="UTF-8"?>
 </ui>
 """
 
+
 class Repo(QMainWindow):
     def __init__(self):
         super().__init__()
 
         f = io.StringIO(template)
         uic.loadUi(f, self)  # загружаем дизайн
-        self.setGeometry(300, 300, 400, 400)  # задаём расположение и размеры окна
-        self.label = QLabel()  
-        canvas = QPixmap(200, 200)
-        self.label.setPixmap(canvas)
-        self.pushButton.clicked.connect(self.click)
-    
-    def click(self):
-        x, y = 200, 200
-        w, h = [randint(10, 100) for i in range(2)]        
-        # создаем экземпляр QPainter, передавая холст (self.label.pixmap())
-        painter = QPainter(self.label.pixmap())
-        pen = QPen()
-        pen.setWidth(3)
-        pen.setColor(QColor('YELLOW'))
-        painter.setPen(pen)
-        painter.drawEllipse(x, y, w, h)
-        painter.end()
+        self.do_paint = False
+        self.pushButton.clicked.connect(self.paint)
+
+    def paintEvent(self, event):
+        if self.do_paint:
+            qp = QPainter()
+            qp.begin(self)
+            self.draw(qp)
+            qp.end()
+        self.do_paint = False
+
+    def paint(self):
+        self.do_paint = True
         self.update()
+
+    def draw(self, qp):
+        x, y = 100, 100
+        w = randint(10, 200)
+        qp.setBrush(QColor(255, 255, 0))
+        qp.drawEllipse(x, y, w, w)
+        self.do_paint = False
 
 
 if __name__ == '__main__':
